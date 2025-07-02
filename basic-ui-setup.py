@@ -4,7 +4,7 @@ import sqlite3
 import pandas as pd
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkinter
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import threading
 
 """
@@ -37,8 +37,8 @@ class WeatherApp:
         self.setup_styles()
         self.create_main_layout()
         self.create_menu_bar()
-        self.load_initial_data()
-        self.start_auto_refresh()
+        # self.load_initial_data()
+        # self.start_auto_refresh()
     
     def setup_styles(self):
         """Configure application-wide styles and themes."""
@@ -95,11 +95,11 @@ class WeatherApp:
         self.city_combo = ttk.Combobox(city_frame, textvariable=self.city_var, 
                                       state="readonly", width=20)
         self.city_combo.grid(row=0, column=1, padx=(0, 10))
-        self.city_combo.bind('<<ComboboxSelected>>', self.on_city_changed)
+        # self.city_combo.bind('<<ComboboxSelected>>', self.on_city_changed)
         
         # Refresh button
-        refresh_btn = ttk.Button(city_frame, text="Refresh", command=self.refresh_data)
-        refresh_btn.grid(row=0, column=2)
+        # refresh_btn = ttk.Button(city_frame, text="Refresh", command=self.refresh_data)
+        # refresh_btn.grid(row=0, column=2)
     
     def create_current_weather_section(self, parent):
         """Create the main current weather display section."""
@@ -177,7 +177,7 @@ class WeatherApp:
         
         # Matplotlib figure for trends
         self.trends_fig, self.trends_ax = plt.subplots(figsize=(6, 4))
-        self.trends_canvas = FigureCanvasTkinter(self.trends_fig, trends_frame)
+        self.trends_canvas = FigureCanvasTkAgg(self.trends_fig, trends_frame)
         self.trends_canvas.get_tk_widget().grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
         trends_frame.columnconfigure(0, weight=1)
@@ -199,11 +199,11 @@ class WeatherApp:
                                    values=["24 hours", "3 days", "7 days", "30 days"],
                                    state="readonly", width=15)
         period_combo.grid(row=0, column=1)
-        period_combo.bind('<<ComboboxSelected>>', self.on_period_changed)
+        # period_combo.bind('<<ComboboxSelected>>', self.on_period_changed)
         
         # Historical chart
         self.hist_fig, self.hist_ax = plt.subplots(figsize=(6, 4))
-        self.hist_canvas = FigureCanvasTkinter(self.hist_fig, historical_frame)
+        self.hist_canvas = FigureCanvasTkAgg(self.hist_fig, historical_frame)
         self.hist_canvas.get_tk_widget().grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
         historical_frame.columnconfigure(0, weight=1)
@@ -282,19 +282,19 @@ class WeatherApp:
         # File menu
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Refresh Data", command=self.refresh_data)
+        # file_menu.add_command(label="Refresh Data", command=self.refresh_data)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit)
         
         # View menu
         view_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="View", menu=view_menu)
-        view_menu.add_command(label="Full Screen", command=self.toggle_fullscreen)
+        # view_menu.add_command(label="Full Screen", command=self.toggle_fullscreen)
         
         # Settings menu
         settings_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Settings", menu=settings_menu)
-        settings_menu.add_command(label="Preferences", command=self.open_preferences)
+        # settings_menu.add_command(label="Preferences", command=self.open_preferences)
 
 # --------------------------------------------------
 
@@ -428,3 +428,21 @@ def get_current_weather_data(self, city, country):
     except sqlite3.Error as e:
         print(f"Database error: {e}")
         return None
+
+if __name__ == "__main__":
+    app = WeatherApp("dummy.db")  # or any placeholder since we aren't loading data
+    dummy_data = {
+        'temperature': 22.5,
+        'feels_like': 21.0,
+        'humidity': 60,
+        'pressure': 1012.3,
+        'wind_speed': 3.2,
+        'weather_description': "partly cloudy",
+        'comfort_index': 72,
+        'heat_index_c': 23.0,
+        'wind_chill_c': 20.0,
+        'weather_severity': 15,
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    }
+    # app._update_ui_with_data(dummy_data)
+    app.root.mainloop()
