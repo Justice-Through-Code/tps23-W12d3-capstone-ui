@@ -98,8 +98,8 @@ class WeatherApp:
         # self.city_combo.bind('<<ComboboxSelected>>', self.on_city_changed)
         
         # Refresh button
-        # refresh_btn = ttk.Button(city_frame, text="Refresh", command=self.refresh_data)
-        # refresh_btn.grid(row=0, column=2)
+        refresh_btn = ttk.Button(city_frame, text="Refresh", command=self.refresh_data)
+        refresh_btn.grid(row=0, column=2)
     
     def create_current_weather_section(self, parent):
         """Create the main current weather display section."""
@@ -282,7 +282,7 @@ class WeatherApp:
         # File menu
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
-        # file_menu.add_command(label="Refresh Data", command=self.refresh_data)
+        file_menu.add_command(label="Refresh Data", command=self.refresh_data)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit)
         
@@ -301,133 +301,133 @@ class WeatherApp:
 
 
 # Data Integration and Updates:
-def load_initial_data(self):
-    """Load initial data and populate the interface."""
-    try:
-        # Load available cities
-        cities = self.get_available_cities()
-        self.city_combo['values'] = cities
-        if cities:
-            self.city_combo.set(cities[0])
-            self.current_city = cities[0]
-            self.refresh_data()
-        
-    except Exception as e:
-        self.show_error(f"Failed to load initial data: {e}")
-
-def get_available_cities(self):
-    """Get list of cities with available data."""
-    try:
-        conn = sqlite3.connect(self.database_path)
-        cursor = conn.execute("""
-            SELECT DISTINCT city || ', ' || country as city_country
-            FROM weather_readings 
-            ORDER BY city
-        """)
-        cities = [row[0] for row in cursor.fetchall()]
-        conn.close()
-        return cities
-    except sqlite3.Error as e:
-        self.show_error(f"Database error: {e}")
-        return []
-
-def refresh_data(self):
-    """Refresh all data displays."""
-    if not self.current_city:
-        return
-    
-    self.update_status("Refreshing data...")
-    
-    # Run data loading in background thread to prevent UI freezing
-    threading.Thread(target=self._load_data_background, daemon=True).start()
-
-def _load_data_background(self):
-    """Load data in background thread."""
-    try:
-        # Parse city and country
-        city_parts = self.current_city.split(', ')
-        city, country = city_parts[0], city_parts[1] if len(city_parts) > 1 else ''
-        
-        # Load current weather data
-        current_data = self.get_current_weather_data(city, country)
-        
-        if current_data:
-            # Update UI in main thread
-            self.root.after(0, self._update_ui_with_data, current_data)
-        else:
-            self.root.after(0, self.update_status, "No data available for selected city")
+    def load_initial_data(self):
+        """Load initial data and populate the interface."""
+        try:
+            # Load available cities
+            cities = self.get_available_cities()
+            self.city_combo['values'] = cities
+            if cities:
+                self.city_combo.set(cities[0])
+                self.current_city = cities[0]
+                self.refresh_data()
             
-    except Exception as e:
-        self.root.after(0, self.show_error, f"Error loading data: {e}")
+        except Exception as e:
+            self.show_error(f"Failed to load initial data: {e}")
 
-def _update_ui_with_data(self, data):
-    """Update UI components with new data."""
-    self.current_data = data
-    
-    # Update current weather display
-    self.temp_label.config(text=f"{data['temperature']:.1f}°C")
-    self.desc_label.config(text=data['weather_description'].title())
-    
-    # Update metric displays
-    self.feels_like_label.config(text=f"{data['feels_like']:.1f}°C")
-    self.humidity_label.config(text=f"{data['humidity']}%")
-    self.pressure_label.config(text=f"{data['pressure']:.1f} hPa")
-    self.wind_speed_label.config(text=f"{data['wind_speed']:.1f} m/s")
-    
-    # Update comfort index
-    comfort = data.get('comfort_index', 0)
-    self.comfort_label.config(text=f"{comfort:.0f}/100")
-    self.comfort_bar['value'] = comfort
-    
-    # Update detailed metrics
-    self.heat_index_label.config(text=f"Heat Index: {data.get('heat_index_c', 0):.1f}°C")
-    self.wind_chill_label.config(text=f"Wind Chill: {data.get('wind_chill_c', 0):.1f}°C")
-    self.severity_label.config(text=f"Weather Severity: {data.get('weather_severity', 0):.0f}/100")
-    
-    # Update time information
-    self.last_update_label.config(text=f"Last Update: {data['timestamp']}")
-    self.local_time_label.config(text=f"Local Time: {datetime.now().strftime('%H:%M:%S')}")
-    
-    # Update temperature color based on value
-    temp = data['temperature']
-    if temp > 30:
-        self.temp_label.config(style='Hot.TLabel')
-    elif temp < 10:
-        self.temp_label.config(style='Cold.TLabel')
-    else:
-        self.temp_label.config(style='Normal.TLabel')
-    
-    # Update visualizations
-    self.update_trends_chart()
-    self.update_historical_chart()
-    
-    self.update_status("Data updated successfully")
-
-def get_current_weather_data(self, city, country):
-    """Get the most recent weather data for a city."""
-    try:
-        conn = sqlite3.connect(self.database_path)
-        cursor = conn.execute("""
-            SELECT * FROM processed_weather_data
-            WHERE city = ? AND country = ?
-            ORDER BY timestamp DESC
-            LIMIT 1
-        """, (city, country))
-        
-        row = cursor.fetchone()
-        if row:
-            # Convert to dictionary (assuming processed_weather_data has all columns)
-            columns = [description[0] for description in cursor.description]
-            data = dict(zip(columns, row))
+    def get_available_cities(self):
+        """Get list of cities with available data."""
+        try:
+            conn = sqlite3.connect(self.database_path)
+            cursor = conn.execute("""
+                SELECT DISTINCT city || ', ' || country as city_country
+                FROM weather_readings 
+                ORDER BY city
+            """)
+            cities = [row[0] for row in cursor.fetchall()]
             conn.close()
-            return data
+            return cities
+        except sqlite3.Error as e:
+            self.show_error(f"Database error: {e}")
+            return []
+
+    def refresh_data(self):
+        """Refresh all data displays."""
+        if not self.current_city:
+            return
         
-        conn.close()
-        return None
+        self.update_status("Refreshing data...")
         
-    except sqlite3.Error as e:
-        print(f"Database error: {e}")
-        return None
+        # Run data loading in background thread to prevent UI freezing
+        threading.Thread(target=self._load_data_background, daemon=True).start()
+
+    def _load_data_background(self):
+        """Load data in background thread."""
+        try:
+            # Parse city and country
+            city_parts = self.current_city.split(', ')
+            city, country = city_parts[0], city_parts[1] if len(city_parts) > 1 else ''
+            
+            # Load current weather data
+            current_data = self.get_current_weather_data(city, country)
+            
+            if current_data:
+                # Update UI in main thread
+                self.root.after(0, self._update_ui_with_data, current_data)
+            else:
+                self.root.after(0, self.update_status, "No data available for selected city")
+                
+        except Exception as e:
+            self.root.after(0, self.show_error, f"Error loading data: {e}")
+
+    def _update_ui_with_data(self, data):
+        """Update UI components with new data."""
+        self.current_data = data
+        
+        # Update current weather display
+        self.temp_label.config(text=f"{data['temperature']:.1f}°C")
+        self.desc_label.config(text=data['weather_description'].title())
+        
+        # Update metric displays
+        self.feels_like_label.config(text=f"{data['feels_like']:.1f}°C")
+        self.humidity_label.config(text=f"{data['humidity']}%")
+        self.pressure_label.config(text=f"{data['pressure']:.1f} hPa")
+        self.wind_speed_label.config(text=f"{data['wind_speed']:.1f} m/s")
+        
+        # Update comfort index
+        comfort = data.get('comfort_index', 0)
+        self.comfort_label.config(text=f"{comfort:.0f}/100")
+        self.comfort_bar['value'] = comfort
+        
+        # Update detailed metrics
+        self.heat_index_label.config(text=f"Heat Index: {data.get('heat_index_c', 0):.1f}°C")
+        self.wind_chill_label.config(text=f"Wind Chill: {data.get('wind_chill_c', 0):.1f}°C")
+        self.severity_label.config(text=f"Weather Severity: {data.get('weather_severity', 0):.0f}/100")
+        
+        # Update time information
+        self.last_update_label.config(text=f"Last Update: {data['timestamp']}")
+        self.local_time_label.config(text=f"Local Time: {datetime.now().strftime('%H:%M:%S')}")
+        
+        # Update temperature color based on value
+        temp = data['temperature']
+        if temp > 30:
+            self.temp_label.config(style='Hot.TLabel')
+        elif temp < 10:
+            self.temp_label.config(style='Cold.TLabel')
+        else:
+            self.temp_label.config(style='Normal.TLabel')
+        
+        # Update visualizations
+        # self.update_trends_chart()
+        # self.update_historical_chart()
+        
+        # self.update_status("Data updated successfully")
+
+    def get_current_weather_data(self, city, country):
+        """Get the most recent weather data for a city."""
+        try:
+            conn = sqlite3.connect(self.database_path)
+            cursor = conn.execute("""
+                SELECT * FROM processed_weather_data
+                WHERE city = ? AND country = ?
+                ORDER BY timestamp DESC
+                LIMIT 1
+            """, (city, country))
+            
+            row = cursor.fetchone()
+            if row:
+                # Convert to dictionary (assuming processed_weather_data has all columns)
+                columns = [description[0] for description in cursor.description]
+                data = dict(zip(columns, row))
+                conn.close()
+                return data
+            
+            conn.close()
+            return None
+            
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+            return None
 
 if __name__ == "__main__":
     app = WeatherApp("dummy.db")  # or any placeholder since we aren't loading data
@@ -444,5 +444,5 @@ if __name__ == "__main__":
         'weather_severity': 15,
         'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
-    # app._update_ui_with_data(dummy_data)
+    app._update_ui_with_data(dummy_data)
     app.root.mainloop()
